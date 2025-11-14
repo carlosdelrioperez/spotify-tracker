@@ -11,7 +11,7 @@ function Logged() {
   const [activeTab, setActiveTab] = useState("artists");
   const [timeRange, setTimeRange] = useState("medium_term");
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-  //esto no es nada
+
   // Función para obtener datos del backend según el token y timeRange
   const fetchData = (token, range) => {
     fetch(`${BACKEND_URL}/top-artists?time_range=${range}`, {
