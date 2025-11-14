@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 function App() {
   const navigate = useNavigate();
+  const BACKEND_LOGIN = import.meta.env.VITE_SPOTIFY_LOGIN_URL;
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -30,9 +31,7 @@ function App() {
             className="w-40 mb-6"
           />
           <button
-            onClick={() =>
-              (window.location.href = "http://127.0.0.1:3000/login")
-            }
+            onClick={() => (window.location.href = BACKEND_LOGIN)}
             className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105"
           >
             Iniciar sesión con Spotify

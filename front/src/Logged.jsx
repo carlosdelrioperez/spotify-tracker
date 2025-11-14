@@ -10,17 +10,18 @@ function Logged() {
   const [recentTracks, setRecentTracks] = useState([]);
   const [activeTab, setActiveTab] = useState("artists");
   const [timeRange, setTimeRange] = useState("medium_term");
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   // Función para obtener datos del backend según el token y timeRange
   const fetchData = (token, range) => {
-    fetch(`http://127.0.0.1:3000/top-artists?time_range=${range}`, {
+    fetch(`${BACKEND_URL}/top-artists?time_range=${range}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
       .then((data) => setTopArtists(data.items || []))
       .catch((err) => console.error(err));
 
-    fetch(`http://127.0.0.1:3000/top-tracks?time_range=${range}`, {
+    fetch(`${BACKEND_URL}/top-tracks?time_range=${range}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -28,7 +29,7 @@ function Logged() {
       .catch((err) => console.error(err));
 
     // ✅ Fetch de las últimas canciones reproducidas
-    fetch(`http://127.0.0.1:3000/recently-played`, {
+    fetch(`${BACKEND_URL}/recently-played`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
