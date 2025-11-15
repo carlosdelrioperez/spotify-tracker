@@ -2,7 +2,6 @@ import express from "express";
 import axios from "axios";
 import querystring from "querystring";
 import dotenv from "dotenv";
-import cookieParser from "cookie-parser"; // para manejar cookies
 import {
   getTopArtists,
   getTopTracks,
@@ -12,9 +11,7 @@ import {
 dotenv.config();
 
 const router = express.Router();
-router.use(cookieParser()); // inicializar cookie parser
 
-// Login: redirige a Spotify para autorización
 router.get("/login", (req, res) => {
   const scope = [
     "user-read-private",
@@ -35,7 +32,7 @@ router.get("/login", (req, res) => {
   res.redirect("https://accounts.spotify.com/authorize?" + params);
 });
 
-// Callback: intercambia el code por tokens y los guarda en cookie
+// backend: routes.js
 router.get("/callback", async (req, res) => {
   const code = req.query.code;
 
@@ -52,63 +49,51 @@ router.get("/callback", async (req, res) => {
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
 
-    const { access_token, refresh_token, expires_in } = tokenRes.data;
+    const { access_token, refresh_token } = tokenRes.data;
 
-    // Guardar tokens en cookies HTTPOnly
-    res.cookie("spotify_access_token", access_token, {
-      httpOnly: true,
-      secure: true, // usar true en producción con HTTPS
-      maxAge: expires_in * 1000, // expiración en ms
-      sameSite: "lax",
-    });
-
-    res.cookie("spotify_refresh_token", refresh_token, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días
-      sameSite: "lax",
-    });
-
-    // Redirigir al frontend sin exponer tokens
-    res.redirect(`${process.env.FRONTEND_URI}/logged`);
+    // Aquí redirigimos a React con los tokens
+    res.redirect(
+      `${process.env.FRONTEND_URI}/logged?access_token=${access_token}&refresh_token=${refresh_token}`
+    );
   } catch (err) {
     console.error(err);
     res.status(500).send("Error getting tokens");
   }
 });
 
-// Middlewares para proteger rutas con token de la cookie
-const requireSpotifyToken = (req, res, next) => {
-  const token = req.cookies.spotify_access_token;
+router.get("/top-artists", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const timeRange = req.query.time_range || "medium_term";
   if (!token) return res.status(401).json({ error: "Missing token" });
-  req.spotifyToken = token;
-  next();
-};
 
-// Endpoints protegidos
-router.get("/top-artists", requireSpotifyToken, async (req, res) => {
-  const timeRange = req.query.time_range || "medium_term";
   try {
-    const data = await getTopArtists(req.spotifyToken, timeRange);
+    const data = await getTopArtists(token, timeRange);
     res.json(data);
   } catch (e) {
     res.status(400).json({ error: e.message });
   }
 });
 
-router.get("/top-tracks", requireSpotifyToken, async (req, res) => {
+router.get("/top-tracks", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
   const timeRange = req.query.time_range || "medium_term";
+
+  if (!token) return res.status(401).json({ error: "Missing token" });
+
   try {
-    const data = await getTopTracks(req.spotifyToken, timeRange);
+    const data = await getTopTracks(token, timeRange);
     res.json(data);
   } catch (e) {
     res.status(400).json({ error: e.message });
   }
 });
 
-router.get("/recently-played", requireSpotifyToken, async (req, res) => {
+router.get("/recently-played", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Missing token" });
+
   try {
-    const data = await getRecentlyPlayed(req.spotifyToken);
+    const data = await getRecentlyPlayed(token);
     res.json(data);
   } catch (err) {
     res.status(400).json({ error: err.message });

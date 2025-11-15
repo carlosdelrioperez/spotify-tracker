@@ -5,15 +5,9 @@ function App() {
   const navigate = useNavigate();
   const BACKEND_LOGIN = import.meta.env.VITE_SPOTIFY_LOGIN_URL;
 
-  // Comprobar si ya hay sesión activa consultando un endpoint seguro
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/me`, {
-      credentials: "include",
-    })
-      .then((res) => {
-        if (res.ok) navigate("/logged");
-      })
-      .catch((err) => console.error(err));
+    const token = localStorage.getItem("access_token");
+    if (token) navigate("/logged");
   }, [navigate]);
 
   return (
