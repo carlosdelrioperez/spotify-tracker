@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { data, useLocation, useNavigate } from "react-router-dom";
 
 function Logged() {
   const location = useLocation();
@@ -10,6 +10,7 @@ function Logged() {
   const [recentTracks, setRecentTracks] = useState([]);
   const [activeTab, setActiveTab] = useState("artists");
   const [timeRange, setTimeRange] = useState("medium_term");
+  const [me, setMe] = useState([]);
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   // Función para obtener datos del backend según el token y timeRange
@@ -35,6 +36,14 @@ function Logged() {
       .then((res) => res.json())
       .then((data) => setRecentTracks(data.items || []))
       .catch((err) => console.error(err));
+
+    fetch(`${BACKEND_URL}/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => setMe(data))
+      .catch((err) => console.error(err));
+    console.log(me.data);
   };
 
   // useEffect para inicializar token y cargar datos
@@ -72,7 +81,7 @@ function Logged() {
     >
       <header className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8">
         <h2 className="text-xl sm:text-3xl font-bold mb-4 sm:mb-0 text-center sm:text-left">
-          Tu música en Spotify
+          Tu música en Spotify: {me.display_name}
         </h2>
         {/* Contenedor de botones: flex-wrap para que se envuelvan en pantallas pequeñas */}
         <div className="flex flex-wrap justify-center gap-2 sm:gap-4">

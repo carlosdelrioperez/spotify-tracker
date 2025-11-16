@@ -25,3 +25,12 @@ export async function getRecentlyPlayed(token, time_range = "medium_term") {
   );
   return res.data;
 }
+
+export async function getCurrentTrack(params) {}
+
+export async function getUsername(token) {
+  const res = await axios.get("https://api.spotify.com/v1/me", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+}

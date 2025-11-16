@@ -6,6 +6,7 @@ import {
   getTopArtists,
   getTopTracks,
   getRecentlyPlayed,
+  getUsername,
 } from "./spotifyService.js";
 
 dotenv.config();
@@ -94,6 +95,18 @@ router.get("/recently-played", async (req, res) => {
 
   try {
     const data = await getRecentlyPlayed(token);
+    res.json(data);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+router.get("/me", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Missing token" });
+
+  try {
+    const data = await getUsername(token);
     res.json(data);
   } catch (err) {
     res.status(400).json({ error: err.message });
